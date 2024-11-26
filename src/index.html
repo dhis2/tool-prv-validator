@@ -26,14 +26,40 @@
                 </div>
             </div>
         </a>
-        <p class="headerBarTitle">App skeleton for dummies</p>
+        <p class="headerBarTitle">Program Rule Validator</p>
         <button class="headerBarExit" onclick="location.href='../../..';">Exit</button>
     </div>
 
     <div class="mainView">
-        <p>Content goes here...</p>
-
-        <button onclick="helloWorld()">Hello</button>
+        <div>
+            <h2 style="padding-top: 20px;">Program Rule Validation Results</h2>
+            <table id="validationResultsTable">
+              <thead>
+                <tr>
+                  <th>Program</th>
+                  <th>Program Rule Name</th>
+                  <th>Program Rule ID</th>
+                  <th>Missing Variables</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+      
+            <h2>Unused Program Rule Variables</h2>
+      <table id="unusedVariablesTable">
+        <thead>
+          <tr>
+            <th>Select</th>
+            <th>Program Name</th>
+            <th>Program Rule Variable Name</th>
+            <th>Program Rule Variable ID</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+            <button onclick="window.deleteSelectedVariables()">Delete selected</button>
+          </div>
     </div>
 </body>
 

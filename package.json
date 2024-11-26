@@ -1,6 +1,6 @@
 {
-  "name": "dhis2_webapp_template",
-  "description": "Template for basic DHIS2 webapps",
+  "name": "pr-validator",
+  "description": "Program Rule Validator",
   "version": "0.1.0",
   "dependencies": {
     "jquery": "^3.7.1"
@@ -36,14 +36,14 @@
   "manifest.webapp": {
     "developer": {
       "company": "HISP Centre - Univeristy of Oslo",
-      "email": "dev@dhis2.org",
+      "email": "olav@dhis2.org",
       "name": "HISP Centre"
     },
     "icons": {
       "48": "img/icons/app_logo_48x48.png",
       "96": "img/icons/app_logo_96x96.png"
     },
-    "name": "DHIS2 Skeleton App for Dummies",
+    "name": "Program Rule Validator",
     "version": "0.1.0",
     "appType": "APP"
   }

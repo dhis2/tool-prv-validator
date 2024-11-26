@@ -89,6 +89,30 @@ export const d2PostJson = async (endpoint, body) => {
     }
 };
 
+// POST with text/plain to API async
+export const d2PostPlain = async (endpoint, body) => {
+    try {
+        endpoint = formatEndpoint(endpoint);
+        let headers = getHeaders();
+        headers.set("Content-Type", "text/plain");
+        let response = await fetch(baseUrl + endpoint, {
+            method: "POST",
+            headers: headers,
+            body: body
+        });
+        if (!response.ok) {
+            await handleApiError(response); // Handle the error response
+        }
+        let data = await response.json();
+        return data;
+    } catch (error) {
+        console.log("ERROR in POST PLAIN:");
+        console.log(error);
+        throw error;
+    }
+};
+
+
 // PUT to API async
 export const d2PutJson = async (endpoint, body) => {
     try {
