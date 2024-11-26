@@ -31,35 +31,51 @@
     </div>
 
     <div class="mainView">
+        <h1>DHIS2 Program Rule Validator</h1>
+        <h2>Progress</h2>
+        <div id="progressContainer">
+            <div id="progressProgramsContainer">
+                <div>Programs: <span id="progressProgramsText">0/0</span></div>
+                <div class="progress">
+                    <div id="progressProgramsBar" class="progress-bar" style="width: 0%;"></div>
+                </div>
+            </div>
+            <div id="progressRulesContainer">
+                <div>Program Rules in Current Program: <span id="progressRulesText">0/0</span></div>
+                <div class="progress">
+                    <div id="progressRulesBar" class="progress-bar" style="width: 0%;"></div>
+                </div>
+            </div>
+        </div>
         <div>
             <h2 style="padding-top: 20px;">Program Rule Validation Results</h2>
             <table id="validationResultsTable">
-              <thead>
-                <tr>
-                  <th>Program</th>
-                  <th>Program Rule Name</th>
-                  <th>Program Rule ID</th>
-                  <th>Missing Variables</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody></tbody>
+                <thead>
+                    <tr>
+                        <th>Program</th>
+                        <th>Program Rule Name</th>
+                        <th>Program Rule ID</th>
+                        <th>Missing Variables</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
             </table>
-      
+
             <h2>Unused Program Rule Variables</h2>
-      <table id="unusedVariablesTable">
-        <thead>
-          <tr>
-            <th>Select</th>
-            <th>Program Name</th>
-            <th>Program Rule Variable Name</th>
-            <th>Program Rule Variable ID</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
+            <table id="unusedVariablesTable">
+                <thead>
+                    <tr>
+                        <th><input type="checkbox" id="selectAllCheckbox" /></th>
+                        <th>Program Name</th>
+                        <th>Program Rule Variable Name</th>
+                        <th>Program Rule Variable ID</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
             <button onclick="window.deleteSelectedVariables()">Delete selected</button>
-          </div>
+        </div>
     </div>
 </body>
 

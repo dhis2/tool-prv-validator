@@ -19,6 +19,15 @@ function extractVariables(str) {
 
 
 window.validateProgramRules = async function () {
+    // Attach event listener for "Select All" checkbox
+    const selectAllCheckbox = document.getElementById("selectAllCheckbox");
+    selectAllCheckbox.onclick = function () {
+        const checkboxes = document.querySelectorAll("#unusedVariablesTable .variable-checkbox");
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = selectAllCheckbox.checked;
+        });
+    };
+    
     try {
         const programs = await d2Get("api/programs.json?fields=name,id&paging=false");
         const programMap = new Map(programs.programs.map(program => [program.id, program.name])); // Map program IDs to names
@@ -28,8 +37,19 @@ window.validateProgramRules = async function () {
         const unusedVariablesTable = document.getElementById("unusedVariablesTable").querySelector("tbody");
         unusedVariablesTable.innerHTML = "";
 
+        // Progress indicators
+        const progressProgramsText = document.getElementById("progressProgramsText");
+        const progressProgramsBar = document.getElementById("progressProgramsBar");
+        const progressRulesText = document.getElementById("progressRulesText");
+        const progressRulesBar = document.getElementById("progressRulesBar");
+
+        let processedPrograms = 0;
+
         for (const program of programs.programs) {
             const programId = program.id;
+            processedPrograms++;
+            progressProgramsText.innerText = `Programs: ${processedPrograms}/${programs.programs.length}`;
+            progressProgramsBar.style.width = `${(processedPrograms / programs.programs.length) * 100}%`;
 
             // Fetch Program Rules & Program Rule Variables for the Program
             const programRules = await d2Get(`api/programRules.json?fields=name,id,condition,programRuleActions[data,content]&paging=false&filter=program.id:eq:${programId}`);
@@ -38,8 +58,16 @@ window.validateProgramRules = async function () {
             const variableNames = programRuleVariables.programRuleVariables.map(prv => `#{${prv.name}}`);
             const usedVariables = new Set();
 
+            let processedRules = 0;
+            progressRulesText.innerText = `Program Rules in Current Program: 0/${programRules.programRules.length}`;
+            progressRulesBar.style.width = "0%";
+
             // Validate each rule
             for (const rule of programRules.programRules) {
+                processedRules++;
+                progressRulesText.innerText = `Program Rules in Current Program: ${processedRules}/${programRules.programRules.length}`;
+                progressRulesBar.style.width = `${(processedRules / programRules.programRules.length) * 100}%`;
+
                 let invalid = false;
                 let missingVariables = [];
 
@@ -105,7 +133,7 @@ window.validateProgramRules = async function () {
                     const actionCell = row.insertCell(4);
                     const btn = document.createElement("button");
                     btn.innerText = "Maintenance";
-                    btn.onclick = () => window.open(`../../../dhis-web-maintenance/index.html#/edit/programSection/programRule/${rule.id}`, "_blank");
+                    btn.onclick = () => window.open(`https://your-dhis2-instance/maintenance/#/edit/programRule/${rule.id}`, "_blank");
                     actionCell.appendChild(btn);
                 }
             }
@@ -117,6 +145,7 @@ window.validateProgramRules = async function () {
                 const selectCell = row.insertCell(0);
                 const checkbox = document.createElement("input");
                 checkbox.type = "checkbox";
+                checkbox.classList.add("variable-checkbox");
                 checkbox.value = variable.id;
                 selectCell.appendChild(checkbox);
                 row.insertCell(1).innerText = programMap.get(variable.program.id); // Add program name
@@ -124,10 +153,17 @@ window.validateProgramRules = async function () {
                 row.insertCell(3).innerText = variable.id;
             }
         }
+        
+        // Clear progress indicators when done
+        progressProgramsText.innerText = `Programs: ${processedPrograms}/${programs.programs.length} (Done)`;
+        progressProgramsBar.style.width = "100%";
+        progressRulesText.innerText = "Program Rules in Current Program: 0/0 (Done)";
+        progressRulesBar.style.width = "100%";
     } catch (error) {
         console.error("Validation failed", error);
     }
 };
+
 
 window.deleteSelectedVariables = async function () {
     try {
@@ -163,3 +199,4 @@ window.deleteSelectedVariables = async function () {
 
 
 document.addEventListener("DOMContentLoaded", window.validateProgramRules);
+
