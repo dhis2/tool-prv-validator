@@ -27,7 +27,7 @@ window.validateProgramRules = async function () {
             checkbox.checked = selectAllCheckbox.checked;
         });
     };
-    
+
     try {
         const programs = await d2Get("api/programs.json?fields=name,id&paging=false");
         const programMap = new Map(programs.programs.map(program => [program.id, program.name])); // Map program IDs to names
@@ -133,7 +133,7 @@ window.validateProgramRules = async function () {
                     const actionCell = row.insertCell(4);
                     const btn = document.createElement("button");
                     btn.innerText = "Maintenance";
-                    btn.onclick = () => window.open(`https://your-dhis2-instance/maintenance/#/edit/programRule/${rule.id}`, "_blank");
+                    btn.onclick = () => window.open(`../../../dhis-web-maintenance/index.html#/edit/programSection/programRule/${rule.id}`, "_blank");
                     actionCell.appendChild(btn);
                 }
             }
