@@ -1,6 +1,6 @@
 {
-  "name": "pr-validator",
-  "description": "Program Rule Validator",
+  "name": "tool-pr-validator",
+  "description": "Tool to validate program rule and program rules variables, identifying invalid program rules and unused variables.",
   "version": "0.1.0",
   "dependencies": {
     "jquery": "^3.7.1"
@@ -37,13 +37,13 @@
     "developer": {
       "company": "HISP Centre - Univeristy of Oslo",
       "email": "olav@dhis2.org",
-      "name": "HISP Centre"
+      "name": "Implementation team"
     },
     "icons": {
       "48": "img/icons/app_logo_48x48.png",
       "96": "img/icons/app_logo_96x96.png"
     },
-    "name": "Program Rule Validator",
+    "name": "Program Rule Validator Tool",
     "version": "0.1.0",
     "appType": "APP"
   }

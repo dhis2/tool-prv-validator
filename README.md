@@ -1,8 +1,12 @@
-# DHIS2 App Template for Dummies
-Basic DHIS2 app skeleton.
+# Program Rule Validator Tool
+Tool to validate program rule and program rules variables, identifying invalid program rules and unused variables.
+
+> **WARNING**
+> This tool is intended to be used by system administrators to perform specific tasks, it is not intended for end users. It is available as a DHIS2 app, but has not been through the same rigorous testing as normal core apps. It should be used with care, and always tested in a development environment.
+
 
 ## License
-© Copyright 
+© Copyright University of Oslo 2024
 
 
 ## Getting started
@@ -35,7 +39,7 @@ A different DHIS2 instance can be used to develop against by adding a `d2auth.js
 
 ```
 {
-    "baseUrl": "localhost:9000/dev",
+    "baseUrl": "http://localhost:9000/dev",
     "username": "john_doe",
     "password": "District1!"
 }
