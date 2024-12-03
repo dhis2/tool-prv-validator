@@ -24,3 +24,17 @@ table#unusedVariablesTable td:first-child {
     width: 50px; /* Adjust the width as needed */
     text-align: center;
 }
+
+/* Ensure the programDropdown is on top when active */
+.choices__list--dropdown {
+    z-index: 100;
+}
+
+#unusedVariablesFilter {
+    z-index: 1000;
+}
+
+#validationResultsFilter {
+    z-index: 1000;
+}
+
