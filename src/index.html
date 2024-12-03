@@ -50,15 +50,9 @@
                 <div class="col s12">
                     <div class="progress-container" style="display: none;">
                         <div class="progress">
-                            <div id="progressProgramsBar" class="determinate" style="width: 0%;"></div>
+                            <div id="progressCombinedBar" class="determinate" style="width: 0%;"></div>
                             <div class="progress-text-container">
-                                <div id="progressProgramsText" class="progress-text">??</div>
-                            </div>
-                        </div>
-                        <div class="progress">
-                            <div id="progressRulesBar" class="determinate" style="width: 0%;"></div>
-                            <div class="progress-text-container">
-                                <div id="progressRulesText" class="progress-text"></div>
+                                <div id="progressCombinedText" class="progress-text">??</div>
                             </div>
                         </div>
                     </div>
@@ -95,8 +89,10 @@
                     <table id="unusedVariablesTable" class="striped">
                         <thead>
                             <tr>
-                                <th><input type="checkbox" id="selectAllCheckbox" /></th>
-                                <th>Program Name</th>
+                                <label>
+                                    <input type="checkbox" id="selectAllCheckbox" class="filled-in" />
+                                    <span></span>
+                                </label>                                <th>Program Name</th>
                                 <th>Program Rule Variable Name</th>
                                 <th>Program Rule Variable ID</th>
                             </tr>

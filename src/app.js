@@ -95,12 +95,12 @@ document.addEventListener("DOMContentLoaded", async function () {
     });
 
     // Event listeners to filter tables based on selected programs
-    validationResultsFilter.passedElement.element.addEventListener('change', filterValidationResultsTable);
-    unusedVariablesFilter.passedElement.element.addEventListener('change', filterUnusedVariablesTable);
+    validationResultsFilter.passedElement.element.addEventListener("change", filterValidationResultsTable);
+    unusedVariablesFilter.passedElement.element.addEventListener("change", filterUnusedVariablesTable);
 });
 
 function filterValidationResultsTable() {
-    const selectedProgramIds = Array.from(document.getElementById('validationResultsFilter').selectedOptions).map(option => option.value);
+    const selectedProgramIds = Array.from(document.getElementById("validationResultsFilter").selectedOptions).map(option => option.value);
     const rows = document.querySelectorAll("#validationResultsTable tbody tr");
     rows.forEach(row => {
         const programId = row.cells[0].dataset.programId;
@@ -109,7 +109,7 @@ function filterValidationResultsTable() {
 }
 
 function filterUnusedVariablesTable() {
-    const selectedProgramIds = Array.from(document.getElementById('unusedVariablesFilter').selectedOptions).map(option => option.value);
+    const selectedProgramIds = Array.from(document.getElementById("unusedVariablesFilter").selectedOptions).map(option => option.value);
     const rows = document.querySelectorAll("#unusedVariablesTable tbody tr");
     rows.forEach(row => {
         const programId = row.cells[1].dataset.programId;
@@ -136,11 +136,9 @@ window.validateProgramRules = async function (programIds = null) {
         const unusedVariablesTable = document.getElementById("unusedVariablesTable").querySelector("tbody");
         unusedVariablesTable.innerHTML = "";
 
-        // Progress indicators
-        const progressProgramsText = document.getElementById("progressProgramsText");
-        const progressProgramsBar = document.getElementById("progressProgramsBar");
-        const progressRulesText = document.getElementById("progressRulesText");
-        const progressRulesBar = document.getElementById("progressRulesBar");
+        // Combined progress indicators
+        const progressCombinedText = document.getElementById("progressCombinedText");
+        const progressCombinedBar = document.getElementById("progressCombinedBar");
 
         let selectedPrograms = programs.programs;
         if (programIds) {
@@ -156,12 +154,18 @@ window.validateProgramRules = async function (programIds = null) {
         });
 
         let processedPrograms = 0;
+        let totalRules = 0;
+        let processedRules = 0;
+
+        // Calculate total number of rules
+        for (const program of selectedPrograms) {
+            const programRules = await d2Get(`api/programRules.json?fields=id&paging=false&filter=program.id:eq:${program.id}`);
+            totalRules += programRules.programRules.length;
+        }
 
         for (const program of selectedPrograms) {
             const programId = program.id;
             processedPrograms++;
-            progressProgramsText.innerText = `Programs: ${processedPrograms}/${selectedPrograms.length}`;
-            progressProgramsBar.style.width = `${(processedPrograms / selectedPrograms.length) * 100}%`;
 
             // Fetch Program Rules & Program Rule Variables for the Program
             const programRules = await d2Get(`api/programRules.json?fields=name,id,condition,programRuleActions[data,content]&paging=false&filter=program.id:eq:${programId}`);
@@ -170,15 +174,16 @@ window.validateProgramRules = async function (programIds = null) {
             const variableNames = programRuleVariables.programRuleVariables.map(prv => `#{${prv.name}}`);
             const usedVariables = new Set();
 
-            let processedRules = 0;
-            progressRulesText.innerText = `Program Rules in Current Program: 0/${programRules.programRules.length}`;
-            progressRulesBar.style.width = "0%";
-
-            // Validate each rule
+            const programStartProgress = ((processedPrograms - 1) / selectedPrograms.length) * 100;
+            const programEndProgress = (processedPrograms / selectedPrograms.length) * 100;
+            const programProgressInterval = programEndProgress - programStartProgress;
+            processedRules = 0;
             for (const rule of programRules.programRules) {
                 processedRules++;
-                progressRulesText.innerText = `Program Rules in Current Program: ${processedRules}/${programRules.programRules.length}`;
-                progressRulesBar.style.width = `${(processedRules / programRules.programRules.length) * 100}%`;
+                const ruleProgress = (processedRules / programRules.programRules.length) * (programProgressInterval);
+                const overallProgress = programStartProgress + ruleProgress;
+                progressCombinedText.innerText = `Programs: ${processedPrograms}/${selectedPrograms.length}, Program Rules: ${processedRules}/${totalRules}`;
+                progressCombinedBar.style.width = `${overallProgress}%`;
 
                 let invalid = false;
                 let missingVariables = [];
@@ -269,10 +274,8 @@ window.validateProgramRules = async function (programIds = null) {
         }
         
         // Clear progress indicators when done
-        progressProgramsText.innerText = `Programs: ${processedPrograms}/${selectedPrograms.length} (Done)`;
-        progressProgramsBar.style.width = "100%";
-        progressRulesText.innerText = "Program Rules in Current Program: 0/0 (Done)";
-        progressRulesBar.style.width = "100%";
+        progressCombinedText.innerText = `Programs: ${processedPrograms}/${selectedPrograms.length}, Program Rules: ${processedRules}/${totalRules} (Done)`;
+        progressCombinedBar.style.width = "100%";
     } catch (error) {
         console.error("Validation failed", error);
     }
