@@ -2,10 +2,14 @@
 
 //JS
 import { d2Get, d2PostPlain, d2Delete } from "./js/d2api.js";
+import Choices from 'choices.js';
+import M from 'materialize-css';
 
 //CSS
 import "./css/header.css";
 import "./css/style.css";
+import 'materialize-css/dist/css/materialize.min.css';
+import 'choices.js/public/assets/styles/choices.min.css';
 
 function extractVariables(str) {
     const regex = /#{(\w+)}/g;
