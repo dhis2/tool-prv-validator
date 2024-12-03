@@ -1,0 +1,20 @@
+.progress-text {
+    font-weight: bold;
+    text-align: center;
+    margin-top: 5px;
+}
+.progress-text-container {
+    text-align: center;
+    margin-top: 5px;
+}
+.progress-container {
+    margin-top: 20px;
+}
+
+.variable-checkbox {
+    display: inline-block;
+    width: auto;
+    height: auto;
+    margin: 0;
+    padding: 0;
+}

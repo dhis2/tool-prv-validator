@@ -39,21 +39,28 @@
                     <div class="input-field col s6">
                         <select id="programDropdown" multiple></select>
                     </div>
-                    <div class="col s6" style="display: flex; align-items: center;">
-                        <button id="validateSelectedButton" class="btn waves-effect waves-light" style="margin-right: 10px;">Validate Selected</button>
+                    <div class="col s6" style="display: flex; align-items: center; margin-top: 15px; max-width: 400px;">
+                        <button id="validateSelectedButton" class="btn waves-effect waves-light"
+                            style="margin-right: 10px;" disabled>Validate Selected</button>
                         <button id="validateAllButton" class="btn waves-effect waves-light">Validate All</button>
                     </div>
                 </div>
             </div>
             <div class="row">
                 <div class="col s12">
-                    <div class="progress">
-                        <div id="progressProgramsBar" class="determinate" style="width: 0%;"></div>
-                        <div id="progressProgramsText" class="progress-text">??</div>
-                    </div>
-                    <div class="progress">
-                        <div id="progressRulesBar" class="determinate" style="width: 0%;"></div>
-                        <div id="progressRulesText" class="progress-text"></div>
+                    <div class="progress-container" style="display: none;">
+                        <div class="progress">
+                            <div id="progressProgramsBar" class="determinate" style="width: 0%;"></div>
+                            <div class="progress-text-container">
+                                <div id="progressProgramsText" class="progress-text">??</div>
+                            </div>
+                        </div>
+                        <div class="progress">
+                            <div id="progressRulesBar" class="determinate" style="width: 0%;"></div>
+                            <div class="progress-text-container">
+                                <div id="progressRulesText" class="progress-text"></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -66,8 +73,7 @@
                 </div>
                 <div id="validationResultsTab" class="col s12">
                     <div class="input-field col s12">
-                        <select id="validationResultsFilter"></select>
-                        <label>Filter by Programme</label>
+                        <select id="validationResultsFilter" multiple></select>
                     </div>
                     <table id="validationResultsTable" class="striped">
                         <thead>
@@ -84,8 +90,7 @@
                 </div>
                 <div id="unusedVariablesTab" class="col s12">
                     <div class="input-field col s12">
-                        <select id="unusedVariablesFilter"></select>
-                        <label>Filter by Programme</label>
+                        <select id="unusedVariablesFilter" multiple></select>
                     </div>
                     <table id="unusedVariablesTable" class="striped">
                         <thead>

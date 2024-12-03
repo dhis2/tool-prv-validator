@@ -2,14 +2,16 @@
 
 //JS
 import { d2Get, d2PostPlain, d2Delete } from "./js/d2api.js";
-import Choices from 'choices.js';
-import M from 'materialize-css';
+import Choices from "choices.js";
+import M from "materialize-css";
 
 //CSS
 import "./css/header.css";
 import "./css/style.css";
-import 'materialize-css/dist/css/materialize.min.css';
-import 'choices.js/public/assets/styles/choices.min.css';
+import "materialize-css/dist/css/materialize.min.css";
+import "choices.js/public/assets/styles/choices.min.css";
+
+let validationResultsFilter, unusedVariablesFilter;
 
 function extractVariables(str) {
     const regex = /#{(\w+)}/g;
@@ -23,34 +25,97 @@ function extractVariables(str) {
 
 document.addEventListener("DOMContentLoaded", async function () {
     const programs = await d2Get("api/programs.json?fields=name,id&paging=false");
-    const programChoices = new Choices('#programDropdown', {
+    const programChoices = new Choices("#programDropdown", {
         choices: programs.programs.map(program => ({ value: program.id, label: program.name })),
         searchEnabled: true,
         placeholder: true,
-        placeholderValue: 'Programme(s) to validate',
+        placeholderValue: "Programme(s) to validate",
         searchPlaceholderValue: "Search programmes",
         removeItemButton: true
     });
 
-    const tabs = document.querySelectorAll('.tabs');
+    const tabs = document.querySelectorAll(".tabs");
     M.Tabs.init(tabs);
 
-    const validateSelectedButton = document.getElementById('validateSelectedButton');
+    const validateSelectedButton = document.getElementById("validateSelectedButton");
+    const validateAllButton = document.getElementById("validateAllButton");
+    const progressContainer = document.querySelector(".progress-container");
+
+    // Enable validate buttons based on program selection
+    document.getElementById("programDropdown").addEventListener("change", function () {
+        const selectedProgramIds = programChoices.getValue(true);
+        validateSelectedButton.disabled = selectedProgramIds.length === 0;
+    });
+
     validateSelectedButton.onclick = function () {
         const selectedProgramIds = programChoices.getValue(true);
-        console.log(selectedProgramIds);
         if (selectedProgramIds.length > 0) {
-            window.validateProgramRules(selectedProgramIds);
+            validateSelectedButton.disabled = true;
+            validateAllButton.disabled = true;
+            progressContainer.style.display = "block";
+            window.validateProgramRules(selectedProgramIds).finally(() => {
+                validateSelectedButton.disabled = false;
+                validateAllButton.disabled = false;
+                progressContainer.style.display = "none";
+            });
         } else {
-            alert('Please select at least one program to validate.');
+            alert("Please select at least one program to validate.");
         }
     };
 
-    const validateAllButton = document.getElementById('validateAllButton');
     validateAllButton.onclick = function () {
-        window.validateProgramRules();
+        validateSelectedButton.disabled = true;
+        validateAllButton.disabled = true;
+        progressContainer.style.display = "block";
+        window.validateProgramRules().finally(() => {
+            validateSelectedButton.disabled = false;
+            validateAllButton.disabled = false;
+            progressContainer.style.display = "none";
+        });
     };
+
+    validationResultsFilter = new Choices("#validationResultsFilter", {
+        searchEnabled: true,
+        placeholder: true,
+        placeholderValue: "Filter by Programme",
+        searchPlaceholderValue: "Search programmes",
+        removeItemButton: true,
+        shouldSort: false,
+        duplicateItemsAllowed: false
+    });
+
+    unusedVariablesFilter = new Choices("#unusedVariablesFilter", {
+        searchEnabled: true,
+        placeholder: true,
+        placeholderValue: "Filter by Programme",
+        searchPlaceholderValue: "Search programmes",
+        removeItemButton: true,
+        shouldSort: false,
+        duplicateItemsAllowed: false
+    });
+
+    // Event listeners to filter tables based on selected programs
+    validationResultsFilter.passedElement.element.addEventListener('change', filterValidationResultsTable);
+    unusedVariablesFilter.passedElement.element.addEventListener('change', filterUnusedVariablesTable);
 });
+
+function filterValidationResultsTable() {
+    const selectedProgramIds = Array.from(document.getElementById('validationResultsFilter').selectedOptions).map(option => option.value);
+    const rows = document.querySelectorAll("#validationResultsTable tbody tr");
+    rows.forEach(row => {
+        const programId = row.cells[0].dataset.programId;
+        row.style.display = selectedProgramIds.includes(programId) ? "" : "none";
+    });
+}
+
+function filterUnusedVariablesTable() {
+    const selectedProgramIds = Array.from(document.getElementById('unusedVariablesFilter').selectedOptions).map(option => option.value);
+    const rows = document.querySelectorAll("#unusedVariablesTable tbody tr");
+    rows.forEach(row => {
+        const programId = row.cells[1].dataset.programId;
+        row.style.display = selectedProgramIds.includes(programId) ? "" : "none";
+    });
+}
 
 window.validateProgramRules = async function (programIds = null) {
     // Attach event listener for "Select All" checkbox
@@ -81,6 +146,14 @@ window.validateProgramRules = async function (programIds = null) {
         if (programIds) {
             selectedPrograms = programs.programs.filter(program => programIds.includes(program.id));
         }
+
+        validationResultsFilter.clearStore();
+        unusedVariablesFilter.clearStore();
+
+        selectedPrograms.forEach(program => {
+            validationResultsFilter.setChoices([{ value: program.id, label: program.name }], "value", "label", false);
+            unusedVariablesFilter.setChoices([{ value: program.id, label: program.name }], "value", "label", false);
+        });
 
         let processedPrograms = 0;
 
@@ -165,6 +238,7 @@ window.validateProgramRules = async function (programIds = null) {
                 if (invalid) {
                     const row = validationResultsTable.insertRow();
                     row.insertCell(0).innerText = program.name;
+                    row.cells[0].dataset.programId = program.id;
                     row.insertCell(1).innerText = rule.name;
                     row.insertCell(2).innerText = rule.id;
                     const missingVarsCell = row.insertCell(3);
@@ -188,6 +262,7 @@ window.validateProgramRules = async function (programIds = null) {
                 checkbox.value = variable.id;
                 selectCell.appendChild(checkbox);
                 row.insertCell(1).innerText = programMap.get(variable.program.id); // Add program name
+                row.cells[1].dataset.programId = variable.program.id;
                 row.insertCell(2).innerText = variable.name;
                 row.insertCell(3).innerText = variable.id;
             }
@@ -202,7 +277,6 @@ window.validateProgramRules = async function (programIds = null) {
         console.error("Validation failed", error);
     }
 };
-
 
 window.deleteSelectedVariables = async function () {
     try {
