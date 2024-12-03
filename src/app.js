@@ -113,19 +113,27 @@ document.addEventListener("DOMContentLoaded", async function () {
 function filterValidationResultsTable() {
     const selectedProgramIds = Array.from(document.getElementById("validationResultsFilter").selectedOptions).map(option => option.value);
     const rows = document.querySelectorAll("#validationResultsTable tbody tr");
-    rows.forEach(row => {
-        const programId = row.cells[0].dataset.programId;
-        row.style.display = selectedProgramIds.includes(programId) ? "" : "none";
-    });
+    if (selectedProgramIds.length === 0) {
+        rows.forEach(row => row.style.display = "");
+    } else {
+        rows.forEach(row => {
+            const programId = row.cells[0].dataset.programId;
+            row.style.display = selectedProgramIds.includes(programId) ? "" : "none";
+        });
+    }
 }
 
 function filterUnusedVariablesTable() {
     const selectedProgramIds = Array.from(document.getElementById("unusedVariablesFilter").selectedOptions).map(option => option.value);
     const rows = document.querySelectorAll("#unusedVariablesTable tbody tr");
-    rows.forEach(row => {
-        const programId = row.cells[1].dataset.programId;
-        row.style.display = selectedProgramIds.includes(programId) ? "" : "none";
-    });
+    if (selectedProgramIds.length === 0) {
+        rows.forEach(row => row.style.display = "");
+    } else {
+        rows.forEach(row => {
+            const programId = row.cells[1].dataset.programId;
+            row.style.display = selectedProgramIds.includes(programId) ? "" : "none";
+        });
+    }
 }
 
 window.validateProgramRules = async function (programIds = null) {
@@ -162,6 +170,10 @@ window.validateProgramRules = async function (programIds = null) {
 
         validationResultsFilter.clearStore();
         unusedVariablesFilter.clearStore();
+
+        // Make all rows visible again
+        document.querySelectorAll("#validationResultsTable tbody tr").forEach(row => row.style.display = "");
+        document.querySelectorAll("#unusedVariablesTable tbody tr").forEach(row => row.style.display = "");
 
         selectedPrograms.forEach(program => {
             validationResultsFilter.setChoices([{ value: program.id, label: program.name }], "value", "label", false);
