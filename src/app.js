@@ -261,11 +261,14 @@ window.validateProgramRules = async function (programIds = null) {
             for (const variable of unusedVariables) {
                 const row = unusedVariablesTable.insertRow();
                 const selectCell = row.insertCell(0);
+                const label = document.createElement("label");
                 const checkbox = document.createElement("input");
                 checkbox.type = "checkbox";
-                checkbox.classList.add("variable-checkbox");
+                checkbox.classList.add("variable-checkbox", "filled-in");
                 checkbox.value = variable.id;
-                selectCell.appendChild(checkbox);
+                label.appendChild(checkbox);
+                label.appendChild(document.createElement("span"));
+                selectCell.appendChild(label);
                 row.insertCell(1).innerText = programMap.get(variable.program.id); // Add program name
                 row.cells[1].dataset.programId = variable.program.id;
                 row.insertCell(2).innerText = variable.name;
