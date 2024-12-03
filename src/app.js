@@ -21,8 +21,38 @@ function extractVariables(str) {
     return variables;
 }
 
+document.addEventListener("DOMContentLoaded", async function () {
+    const programs = await d2Get("api/programs.json?fields=name,id&paging=false");
+    const programChoices = new Choices('#programDropdown', {
+        choices: programs.programs.map(program => ({ value: program.id, label: program.name })),
+        searchEnabled: true,
+        placeholder: true,
+        placeholderValue: 'Programme(s) to validate',
+        searchPlaceholderValue: "Search programmes",
+        removeItemButton: true
+    });
 
-window.validateProgramRules = async function () {
+    const tabs = document.querySelectorAll('.tabs');
+    M.Tabs.init(tabs);
+
+    const validateSelectedButton = document.getElementById('validateSelectedButton');
+    validateSelectedButton.onclick = function () {
+        const selectedProgramIds = programChoices.getValue(true);
+        console.log(selectedProgramIds);
+        if (selectedProgramIds.length > 0) {
+            window.validateProgramRules(selectedProgramIds);
+        } else {
+            alert('Please select at least one program to validate.');
+        }
+    };
+
+    const validateAllButton = document.getElementById('validateAllButton');
+    validateAllButton.onclick = function () {
+        window.validateProgramRules();
+    };
+});
+
+window.validateProgramRules = async function (programIds = null) {
     // Attach event listener for "Select All" checkbox
     const selectAllCheckbox = document.getElementById("selectAllCheckbox");
     selectAllCheckbox.onclick = function () {
@@ -47,13 +77,18 @@ window.validateProgramRules = async function () {
         const progressRulesText = document.getElementById("progressRulesText");
         const progressRulesBar = document.getElementById("progressRulesBar");
 
+        let selectedPrograms = programs.programs;
+        if (programIds) {
+            selectedPrograms = programs.programs.filter(program => programIds.includes(program.id));
+        }
+
         let processedPrograms = 0;
 
-        for (const program of programs.programs) {
+        for (const program of selectedPrograms) {
             const programId = program.id;
             processedPrograms++;
-            progressProgramsText.innerText = `Programs: ${processedPrograms}/${programs.programs.length}`;
-            progressProgramsBar.style.width = `${(processedPrograms / programs.programs.length) * 100}%`;
+            progressProgramsText.innerText = `Programs: ${processedPrograms}/${selectedPrograms.length}`;
+            progressProgramsBar.style.width = `${(processedPrograms / selectedPrograms.length) * 100}%`;
 
             // Fetch Program Rules & Program Rule Variables for the Program
             const programRules = await d2Get(`api/programRules.json?fields=name,id,condition,programRuleActions[data,content]&paging=false&filter=program.id:eq:${programId}`);
@@ -159,7 +194,7 @@ window.validateProgramRules = async function () {
         }
         
         // Clear progress indicators when done
-        progressProgramsText.innerText = `Programs: ${processedPrograms}/${programs.programs.length} (Done)`;
+        progressProgramsText.innerText = `Programs: ${processedPrograms}/${selectedPrograms.length} (Done)`;
         progressProgramsBar.style.width = "100%";
         progressRulesText.innerText = "Program Rules in Current Program: 0/0 (Done)";
         progressRulesBar.style.width = "100%";
@@ -201,6 +236,4 @@ window.deleteSelectedVariables = async function () {
     }
 };
 
-
-document.addEventListener("DOMContentLoaded", window.validateProgramRules);
 

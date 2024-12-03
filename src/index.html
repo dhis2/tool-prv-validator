@@ -33,50 +33,75 @@
     </div>
 
     <div id="mainView">
-        <h1>DHIS2 Program Rule Validator</h1>
-        <h2>Progress</h2>
-        <div id="progressContainer">
-            <div id="progressProgramsContainer">
-                <div>Programs: <span id="progressProgramsText">0/0</span></div>
-                <div class="progress">
-                    <div id="progressProgramsBar" class="progress-bar" style="width: 0%;"></div>
+        <div class="container">
+            <div class="row">
+                <div class="col s12">
+                    <div class="input-field col s6">
+                        <select id="programDropdown" multiple></select>
+                    </div>
+                    <div class="col s6" style="display: flex; align-items: center;">
+                        <button id="validateSelectedButton" class="btn waves-effect waves-light" style="margin-right: 10px;">Validate Selected</button>
+                        <button id="validateAllButton" class="btn waves-effect waves-light">Validate All</button>
+                    </div>
                 </div>
             </div>
-            <div id="progressRulesContainer">
-                <div>Program Rules in Current Program: <span id="progressRulesText">0/0</span></div>
-                <div class="progress">
-                    <div id="progressRulesBar" class="progress-bar" style="width: 0%;"></div>
+            <div class="row">
+                <div class="col s12">
+                    <div class="progress">
+                        <div id="progressProgramsBar" class="determinate" style="width: 0%;"></div>
+                        <div id="progressProgramsText" class="progress-text">??</div>
+                    </div>
+                    <div class="progress">
+                        <div id="progressRulesBar" class="determinate" style="width: 0%;"></div>
+                        <div id="progressRulesText" class="progress-text"></div>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div>
-            <h2 style="padding-top: 20px;">Program Rule Validation Results</h2>
-            <table id="validationResultsTable">
-                <thead>
-                    <tr>
-                        <th>Program</th>
-                        <th>Program Rule Name</th>
-                        <th>Program Rule ID</th>
-                        <th>Missing Variables</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-
-            <h2>Unused Program Rule Variables</h2>
-            <table id="unusedVariablesTable">
-                <thead>
-                    <tr>
-                        <th><input type="checkbox" id="selectAllCheckbox" /></th>
-                        <th>Program Name</th>
-                        <th>Program Rule Variable Name</th>
-                        <th>Program Rule Variable ID</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-            <button onclick="window.deleteSelectedVariables()">Delete selected</button>
+            <div class="row">
+                <div class="col s12">
+                    <ul class="tabs">
+                        <li class="tab col s6"><a href="#validationResultsTab">Validation Results</a></li>
+                        <li class="tab col s6"><a href="#unusedVariablesTab">Unused Variables</a></li>
+                    </ul>
+                </div>
+                <div id="validationResultsTab" class="col s12">
+                    <div class="input-field col s12">
+                        <select id="validationResultsFilter"></select>
+                        <label>Filter by Programme</label>
+                    </div>
+                    <table id="validationResultsTable" class="striped">
+                        <thead>
+                            <tr>
+                                <th>Program</th>
+                                <th>Program Rule Name</th>
+                                <th>Program Rule ID</th>
+                                <th>Missing Variables</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+                <div id="unusedVariablesTab" class="col s12">
+                    <div class="input-field col s12">
+                        <select id="unusedVariablesFilter"></select>
+                        <label>Filter by Programme</label>
+                    </div>
+                    <table id="unusedVariablesTable" class="striped">
+                        <thead>
+                            <tr>
+                                <th><input type="checkbox" id="selectAllCheckbox" /></th>
+                                <th>Program Name</th>
+                                <th>Program Rule Variable Name</th>
+                                <th>Program Rule Variable ID</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                    <button onclick="window.deleteSelectedVariables()" class="btn waves-effect waves-light">Delete
+                        selected</button>
+                </div>
+            </div>
         </div>
     </div>
 </body>
