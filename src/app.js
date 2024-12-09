@@ -6,7 +6,6 @@ import Choices from "choices.js";
 import M from "materialize-css";
 
 //CSS
-import "./css/header.css";
 import "./css/style.css";
 import "materialize-css/dist/css/materialize.min.css";
 import "choices.js/public/assets/styles/choices.min.css";
