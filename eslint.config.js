@@ -1,18 +1,15 @@
-import globals from "globals";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
-import js from "@eslint/js";
-import { FlatCompat } from "@eslint/eslintrc";
+const globals = require("globals");
+const path = require("path");
+const js = require("@eslint/js");
+const { FlatCompat } = require("@eslint/eslintrc");
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 const compat = new FlatCompat({
     baseDirectory: __dirname,
     recommendedConfig: js.configs.recommended,
     allConfig: js.configs.all
 });
 
-export default [...compat.extends("eslint:recommended"), {
+module.exports = [...compat.extends("eslint:recommended"), {
     languageOptions: {
         globals: {
             ...globals.browser,
@@ -21,16 +18,15 @@ export default [...compat.extends("eslint:recommended"), {
             process: true,
             module: true,
             DHIS_CONFIG: true,
+            es2021: true
         },
-
-        ecmaVersion: 9,
-        sourceType: "module",
+        ecmaVersion: 12,
+        sourceType: "module"
     },
-
     rules: {
         indent: ["error", 4],
         quotes: ["error", "double"],
         semi: ["error", "always"],
-        "no-console": "off",
-    },
+        "no-console": "off"
+    }
 }];
