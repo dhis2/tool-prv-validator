@@ -1,7 +1,7 @@
 {
   "name": "tool-pr-validator",
   "description": "Tool to validate program rule and program rules variables, identifying invalid program rules and unused variables.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "dependencies": {
     "choices.js": "^11.0.2",
     "jquery": "^3.7.1",
@@ -45,7 +45,6 @@
       "96": "img/icons/app_logo_96x96.png"
     },
     "name": "Program Rule Validator Tool",
-    "version": "0.1.0",
     "appType": "APP"
   }
 }
