@@ -221,11 +221,15 @@ window.validateProgramRules = async function (programIds = null) {
                     // Check validity of the condition property
                     if (!invalid) {
                         try {
-                            await d2PostPlain(`api/programRules/condition/description?programId=${programId}`, rule.condition);
+                            let result = await d2PostPlain(`api/programRules/condition/description?programId=${programId}`, rule.condition);
+                            if (result.status === "ERROR") {
+                                invalid = true;
+                                missingVariables.push(result.message);
+                            }
                         } catch (error) {
                             console.log(error);
                             invalid = true;
-                            missingVariables.push("Invalid condition");
+                            missingVariables.push("Validation of condition failed.");
                         }
                     }
                 }
