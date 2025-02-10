@@ -1,5 +1,5 @@
 # Program Rule Validator Tool
-Tool to validate program rule and program rules variables, identifying invalid program rules and unused variables.
+Tool to validate program rule and program rules variables, identifying invalid program rules and unused variables. It allows bulk deletion of unused program rule variables.
 
 > **WARNING**
 > This tool is intended to be used by system administrators to perform specific tasks, it is not intended for end users. It is available as a DHIS2 app, but has not been through the same rigorous testing as normal core apps. It should be used with care, and always tested in a development environment.
