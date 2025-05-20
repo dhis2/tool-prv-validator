@@ -68,49 +68,71 @@ export const d2Get = async (endpoint) => {
 
 // POST to API async
 export const d2PostJson = async (endpoint, body) => {
+    endpoint = formatEndpoint(endpoint);
+    let headers = getHeaders();
+    headers.set("Content-Type", "application/json");
+
+    const response = await fetch(baseUrl + endpoint, {
+        method: "POST",
+        headers: headers,
+        body: JSON.stringify(body)
+    });
+
+    let data = {};
     try {
-        endpoint = formatEndpoint(endpoint);
-        let headers = getHeaders();
-        headers.set("Content-Type", "application/json");
-        let response = await fetch(baseUrl + endpoint, {
-            method: "POST",
-            headers: headers,
-            body: JSON.stringify(body)
-        });
-        if (!response.ok) {
-            await handleApiError(response); // Handle the error response
-        }
-        let data = await response.json();
-        return data;
-    } catch (error) {
-        console.log("ERROR in POST:");
-        console.log(error);
-        throw error;
+        data = await response.json();
+    } catch (e) {
+        console.warn("Response is not JSON, ignoring:", e);
     }
+
+    return {
+        httpStatusCode: response.status,
+        httpStatus: response.statusText,
+        ok: response.ok,
+        ...data
+    };
 };
 
 // POST with text/plain to API async
 export const d2PostPlain = async (endpoint, body) => {
+    endpoint = formatEndpoint(endpoint);
+    let headers = getHeaders();
+    headers.set("Content-Type", "text/plain");
+
+    let response;
+    let data = {};
+
     try {
-        endpoint = formatEndpoint(endpoint);
-        let headers = getHeaders();
-        headers.set("Content-Type", "text/plain");
-        let response = await fetch(baseUrl + endpoint, {
+        response = await fetch(baseUrl + endpoint, {
             method: "POST",
             headers: headers,
             body: body
         });
-        if (!response.ok) {
-            await handleApiError(response); // Handle the error response
+
+        try {
+            data = await response.json();
+        } catch (e) {
+            console.warn("Response is not JSON, ignoring:", e);
         }
-        let data = await response.json();
-        return data;
+
+        return {
+            httpStatusCode: response.status,
+            httpStatus: response.statusText,
+            ok: response.ok,
+            ...data
+        };
     } catch (error) {
-        console.log("ERROR in POST PLAIN:");
-        console.log(error);
-        throw error;
+        console.error("ERROR in POST PLAIN:", error);
+        return {
+            httpStatusCode: 0,
+            httpStatus: "Network error",
+            ok: false,
+            message: "Network or fetch error occurred",
+            error: error.message || error
+        };
     }
 };
+
 
 
 // PUT to API async

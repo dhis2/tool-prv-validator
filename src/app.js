@@ -158,6 +158,8 @@ window.validateProgramRules = async function (programIds = null) {
         validationResultsTable.innerHTML = "";
         const unusedVariablesTable = document.getElementById("unusedVariablesTable").querySelector("tbody");
         unusedVariablesTable.innerHTML = "";
+        const invalidActionExpressionsTable = document.getElementById("invalidActionExpressionsTable").querySelector("tbody");
+        invalidActionExpressionsTable.innerHTML = "";
 
         // Combined progress indicators
         const progressCombinedBar = document.getElementById("progressCombinedBar");
@@ -173,6 +175,9 @@ window.validateProgramRules = async function (programIds = null) {
         // Make all rows visible again
         document.querySelectorAll("#validationResultsTable tbody tr").forEach(row => row.style.display = "");
         document.querySelectorAll("#unusedVariablesTable tbody tr").forEach(row => row.style.display = "");
+        document.querySelectorAll("#invalidActionExpressionsTable tbody tr").forEach(row => row.style.display = "");
+
+        
 
         selectedPrograms.forEach(program => {
             validationResultsFilter.setChoices([{ value: program.id, label: program.name }], "value", "label", false);
@@ -205,10 +210,13 @@ window.validateProgramRules = async function (programIds = null) {
 
                 let invalid = false;
                 let missingVariables = [];
+                let invalidActionExpressions = [];
+                let invalidConditionExpressions = [];
 
                 // Validate if all variables in condition exist
                 if (rule.condition) {
                     const conditionVariables = extractVariables(rule.condition);
+
                     conditionVariables.forEach(varName => {
                         if (!variableNames.includes(varName)) {
                             invalid = true;
@@ -224,18 +232,18 @@ window.validateProgramRules = async function (programIds = null) {
                             let result = await d2PostPlain(`api/programRules/condition/description?programId=${programId}`, rule.condition);
                             if (result.status === "ERROR") {
                                 invalid = true;
-                                missingVariables.push(result.message);
+                                invalidConditionExpressions.push(result.description);
                             }
                         } catch (error) {
                             console.log(error);
                             invalid = true;
-                            missingVariables.push("Validation of condition failed.");
+                            invalidConditionExpressions.push("Validation of condition failed.");
                         }
                     }
                 }
 
                 // Validate if all variables in program rule actions exist
-                rule.programRuleActions.forEach(action => {
+                for (const action of rule.programRuleActions) {
                     if (action.content) {
                         const contentVariables = extractVariables(action.content);
                         contentVariables.forEach(varName => {
@@ -249,6 +257,7 @@ window.validateProgramRules = async function (programIds = null) {
                     }
 
                     if (action.data) {
+                        //Look for cases where the program rule variable does not exist in the program
                         const dataVariables = extractVariables(action.data);
                         dataVariables.forEach(varName => {
                             if (!variableNames.includes(varName)) {
@@ -258,11 +267,25 @@ window.validateProgramRules = async function (programIds = null) {
                                 usedVariables.add(varName);
                             }
                         });
+
+                        // Check syntax of the expression condition
+                        try {
+                            let expression_validation = await d2PostPlain(
+                                `api/programRuleActions/data/expression/description?programId=${programId}`,
+                                action.data
+                            );
+                            if (expression_validation.status === "ERROR") {
+                                invalidActionExpressions.push(action.description);
+                            }
+                        } catch (error) {
+                            console.log(error);
+                            invalidActionExpressions.push(action.description);
+                        }
                     }
-                });
+                };
 
                 // If invalid, add to results table
-                if (invalid) {
+                if (missingVariables.length > 0) {
                     const row = validationResultsTable.insertRow();
                     row.insertCell(0).innerText = program.name;
                     row.cells[0].dataset.programId = program.id;
@@ -276,6 +299,41 @@ window.validateProgramRules = async function (programIds = null) {
                     btn.onclick = () => window.open(`../../../dhis-web-maintenance/index.html#/edit/programSection/programRule/${rule.id}`, "_blank");
                     actionCell.appendChild(btn);
                 }
+
+                // Populate invalid action expressions table
+                if (invalidActionExpressions.length > 0) {
+                    const invalidTable = document.getElementById("invalidActionExpressionsTable").querySelector("tbody");
+                    for (const message of invalidActionExpressions) {
+                        const row = invalidTable.insertRow();
+                        row.insertCell(0).innerText = program.name;
+                        row.insertCell(1).innerText = rule.name;
+                        row.insertCell(2).innerText = rule.id;
+                        row.insertCell(3).innerText = message;
+                        const actionCell = row.insertCell(4);
+                        const btn = document.createElement("button");
+                        btn.innerText = "Maintenance";
+                        btn.onclick = () => window.open(`../../../dhis-web-maintenance/index.html#/edit/programSection/programRule/${rule.id}`, "_blank");
+                        actionCell.appendChild(btn);
+                    }
+                }
+
+                if (invalidConditionExpressions.length > 0) {
+                    const invalidTable = document.getElementById("invalidConditionExpressionsTable").querySelector("tbody");
+                    for (const message of invalidConditionExpressions) {
+                        const row = invalidTable.insertRow();
+                        row.insertCell(0).innerText = program.name;
+                        row.insertCell(1).innerText = rule.name;
+                        row.insertCell(2).innerText = rule.id;
+                        row.insertCell(3).innerText = message;
+                        const actionCell = row.insertCell(4);
+                        const btn = document.createElement("button");
+                        btn.innerText = "Maintenance";
+                        btn.onclick = () => window.open(`../../../dhis-web-maintenance/index.html#/edit/programSection/programRule/${rule.id}`, "_blank");
+                        actionCell.appendChild(btn);
+
+                    }
+                }
+
             }
 
             // Find unused variables
