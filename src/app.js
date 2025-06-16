@@ -10,7 +10,7 @@ import pLimit from "p-limit";
 import "./css/style.css";
 import "materialize-css/dist/css/materialize.min.css";
 import "choices.js/public/assets/styles/choices.min.css";
-
+import { loadLegacyHeaderBarIfNeeded } from "./js/check-header-bar.js";
 
 
 let validationResultsFilter, unusedVariablesFilter;
@@ -26,6 +26,7 @@ function extractVariables(str) {
 }
 
 document.addEventListener("DOMContentLoaded", async function () {
+    loadLegacyHeaderBarIfNeeded();
     const programs = await d2Get("api/programs.json?fields=name,id&paging=false");
     const programChoices = new Choices("#programDropdown", {
         choices: programs.programs.map(program => ({ value: program.id, label: program.name })),
