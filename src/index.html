@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-<!--suppress ALL -->
 <html>
 
 <head>
@@ -13,18 +12,24 @@
 
     <div id="mainView">
         <div class="container">
+            <!-- Program Selection + Buttons -->
             <div class="row">
                 <div class="col s12">
                     <div class="input-field col s6">
                         <select id="programDropdown" multiple></select>
                     </div>
                     <div class="col s6" style="display: flex; align-items: center; margin-top: 15px; max-width: 400px;">
-                        <button id="validateSelectedButton" class="btn waves-effect waves-light"
-                            style="margin-right: 10px;" disabled>Validate Selected</button>
-                        <button id="validateAllButton" class="btn waves-effect waves-light">Validate All</button>
+                        <button id="validateSelectedButton" class="btn waves-effect waves-light" style="margin-right: 10px;" disabled>
+                            Validate Selected
+                        </button>
+                        <button id="validateAllButton" class="btn waves-effect waves-light">
+                            Validate All
+                        </button>
                     </div>
                 </div>
             </div>
+
+            <!-- Progress -->
             <div class="row">
                 <div class="col s12">
                     <div class="progress-container" style="display: none;">
@@ -34,13 +39,19 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Tabs -->
             <div class="row">
                 <div class="col s12">
                     <ul class="tabs">
-                        <li class="tab col s6"><a href="#validationResultsTab">Validation Results</a></li>
-                        <li class="tab col s6"><a href="#unusedVariablesTab">Unused Variables</a></li>
+                        <li class="tab col s3"><a href="#validationResultsTab">Invalid Program Variables</a></li>
+                        <li class="tab col s3"><a href="#invalidConditionExpressionsTab">Invalid Conditions</a></li>
+                        <li class="tab col s3"><a href="#invalidActionExpressionsTab">Invalid Actions</a></li>
+                        <li class="tab col s3"><a href="#unusedVariablesTab">Unused Program Variables</a></li>
                     </ul>
                 </div>
+
+                <!-- Invalid Program Variables -->
                 <div id="validationResultsTab" class="col s12">
                     <div class="input-field col s12">
                         <select id="validationResultsFilter" multiple></select>
@@ -58,6 +69,40 @@
                         <tbody></tbody>
                     </table>
                 </div>
+
+                <!-- Invalid Conditions -->
+                <div id="invalidConditionExpressionsTab" class="col s12">
+                    <table id="invalidConditionExpressionsTable" class="striped">
+                        <thead>
+                            <tr>
+                                <th>Program</th>
+                                <th>Program Rule Name</th>
+                                <th>Program Rule ID</th>
+                                <th>Invalid Condition Expression</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+
+                <!-- Invalid Actions -->
+                <div id="invalidActionExpressionsTab" class="col s12">
+                    <table id="invalidActionExpressionsTable" class="striped">
+                        <thead>
+                            <tr>
+                                <th>Program</th>
+                                <th>Program Rule Name</th>
+                                <th>Program Rule ID</th>
+                                <th>Invalid Action Expression</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+
+                <!-- Unused Variables -->
                 <div id="unusedVariablesTab" class="col s12">
                     <div class="input-field col s12">
                         <select id="unusedVariablesFilter" multiple></select>
@@ -78,7 +123,9 @@
                         </thead>
                         <tbody></tbody>
                     </table>
-                    <button onclick="window.deleteSelectedVariables()" class="btn waves-effect waves-light red" style="z-index: 0;">Delete selected</button>
+                    <button onclick="window.deleteSelectedVariables()" class="btn waves-effect waves-light red" style="z-index: 0;">
+                        Delete selected
+                    </button>
                 </div>
             </div>
         </div>
