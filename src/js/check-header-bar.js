@@ -16,7 +16,7 @@ function parseServerVersion(versionString) {
 
 async function shouldLoadLegacyHeaderBar() {
     try {
-        const response = await d2Get("system/info.json?fields=version");
+        const response = await d2Get("api/system/info.json?fields=version");
         const versionInfo = parseServerVersion(response.version || "0.0.0");
         return versionInfo.minor < 42;
     } catch (error) {
