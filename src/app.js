@@ -116,6 +116,20 @@ function filterValidationResultsTable() {
     }
 }
 
+function stripStringLiterals(expression) {
+    return expression.replace(/(["'])(?:\\.|[^\\])*?\1/g, '');
+}
+
+function extractPRVsFromD2HasValue(expression) {
+    const matches = [];
+    const regex = /d2:hasValue\s*\(\s*["']([^"']+)["']\s*\)/g;
+    let match;
+    while ((match = regex.exec(expression)) !== null) {
+        matches.push(match[1]);
+    }
+    return matches;
+}
+
 function filterUnusedVariablesTable() {
     const selectedProgramIds = Array.from(document.getElementById("unusedVariablesFilter").selectedOptions).map(option => option.value);
     const rows = document.querySelectorAll("#unusedVariablesTable tbody tr");
@@ -179,7 +193,6 @@ window.validateProgramRules = async function (programIds = null) {
             const programRules = await d2Get(`api/programRules.json?fields=name,id,condition,programRuleActions[data,content,description]&paging=false&filter=program.id:eq:${programId}`);
             const programRuleVariables = await d2Get(`api/programRuleVariables.json?fields=name,id,program[id]&paging=false&filter=program.id:eq:${programId}`);
 
-            const variableNames = programRuleVariables.programRuleVariables.map(prv => prv.name);
             const usedVariables = new Set();
 
 
@@ -196,17 +209,31 @@ window.validateProgramRules = async function (programIds = null) {
                 let missingVariables = [];
                 let invalidActionExpressions = [];
                 let invalidConditionExpressions = [];
+
                 if (rule.condition) {
-                    // Check if any PRVs are used in the rule condition
+                    const cleanCondition = stripStringLiterals(rule.condition || "");
+
+                    // PRVs found in d2:hasValue('...')
+                    const hasValuePRVs = new Set(extractPRVsFromD2HasValue(rule.condition));
+
                     for (const prv of programRuleVariables.programRuleVariables) {
-                        if (rule.condition.includes(prv.name)) {
+                        const ref1 = `#{${prv.name}}`;
+                        const ref2 = `A{${prv.name}}`;
+
+                        const usedInCurly = cleanCondition.includes(ref1) || cleanCondition.includes(ref2);
+                        const usedInHasValue = hasValuePRVs.has(prv.name);
+
+                        if (usedInCurly || usedInHasValue) {
                             usedVariables.add(prv.name);
                         }
                     }
 
                     // Still validate the condition with the backend
                     try {
-                        const res = await d2PostPlain(`api/programRules/condition/description?programId=${programId}`, rule.condition);
+                        const res = await d2PostPlain(
+                            `api/programRules/condition/description?programId=${programId}`,
+                            rule.condition
+                        );
                         if (!res.ok || res.status === "ERROR") {
                             invalid = true;
                             invalidConditionExpressions.push(res.description || res.message || "Condition validation failed");
@@ -216,19 +243,36 @@ window.validateProgramRules = async function (programIds = null) {
                         invalidConditionExpressions.push("Condition validation error");
                     }
                 }
+
                 for (const action of rule.programRuleActions) {
+                    const cleanContent = stripStringLiterals(action.content || "");
+                    const cleanData = stripStringLiterals(action.data || "");
+
+                    const hasValuePRVs = new Set([
+                        ...extractPRVsFromD2HasValue(action.content || ""),
+                        ...extractPRVsFromD2HasValue(action.data || "")
+                    ]);
+
                     for (const prv of programRuleVariables.programRuleVariables) {
-                        const name = prv.name;
-                        if (
-                            action.content?.includes(name) || action.data?.includes(name)
-                        ) {
-                            usedVariables.add(name);
+                        const ref1 = `#{${prv.name}}`;
+                        const ref2 = `A{${prv.name}}`;
+
+                        const usedInCurly = cleanContent.includes(ref1) || cleanContent.includes(ref2) ||
+                            cleanData.includes(ref1) || cleanData.includes(ref2);
+
+                        const usedInHasValue = hasValuePRVs.has(prv.name);
+
+                        if (usedInCurly || usedInHasValue) {
+                            usedVariables.add(prv.name);
                         }
                     }
 
                     if (action.data) {
                         try {
-                            const res = await d2PostPlain(`api/programRuleActions/data/expression/description?programId=${programId}`, action.data);
+                            const res = await d2PostPlain(
+                                `api/programRuleActions/data/expression/description?programId=${programId}`,
+                                action.data
+                            );
                             if (!res.ok || res.status === "ERROR") {
                                 invalid = true;
                                 invalidActionExpressions.push(res.description || res.message || "Invalid action expression");
@@ -239,11 +283,6 @@ window.validateProgramRules = async function (programIds = null) {
                         }
                     }
                 }
-
-                            
-                console.log("Program:", program.name);
-                console.log("Available variables:", variableNames);
-                console.log("Used variables from rules:", Array.from(usedVariables));
 
                 return { rule, invalid, missingVariables, invalidActionExpressions, invalidConditionExpressions };
             }));
