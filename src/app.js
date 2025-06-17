@@ -15,16 +15,6 @@ import { loadLegacyHeaderBarIfNeeded } from "./js/check-header-bar.js";
 
 let validationResultsFilter, unusedVariablesFilter;
 
-function extractVariables(str) {
-    const regex = /#{(\w+)}/g;
-    const variables = [];
-    let match;
-    while ((match = regex.exec(str)) !== null) {
-        variables.push(match[0]);
-    }
-    return variables;
-}
-
 document.addEventListener("DOMContentLoaded", async function () {
     loadLegacyHeaderBarIfNeeded();
     const programs = await d2Get("api/programs.json?fields=name,id&paging=false");
@@ -189,12 +179,14 @@ window.validateProgramRules = async function (programIds = null) {
             const programRules = await d2Get(`api/programRules.json?fields=name,id,condition,programRuleActions[data,content,description]&paging=false&filter=program.id:eq:${programId}`);
             const programRuleVariables = await d2Get(`api/programRuleVariables.json?fields=name,id,program[id]&paging=false&filter=program.id:eq:${programId}`);
 
-            const variableNames = programRuleVariables.programRuleVariables.map(prv => `#{${prv.name}}`);
+            const variableNames = programRuleVariables.programRuleVariables.map(prv => prv.name);
             const usedVariables = new Set();
+
 
             const programStartProgress = (programIndex / selectedPrograms.length) * 100;
             const programEndProgress = ((programIndex + 1) / selectedPrograms.length) * 100;
             const programProgressInterval = programEndProgress - programStartProgress;
+
 
             const tasks = programRules.programRules.map((rule, ruleIndex) => limit(async () => {
                 const ruleProgress = ((ruleIndex + 1) / programRules.programRules.length) * programProgressInterval;
@@ -204,30 +196,35 @@ window.validateProgramRules = async function (programIds = null) {
                 let missingVariables = [];
                 let invalidActionExpressions = [];
                 let invalidConditionExpressions = [];
-
                 if (rule.condition) {
-                    const vars = extractVariables(rule.condition);
-                    vars.forEach(v => variableNames.includes(v) ? usedVariables.add(v) : (invalid = true, missingVariables.push(v)));
-
-                    if (!invalid) {
-                        try {
-                            const res = await d2PostPlain(`api/programRules/condition/description?programId=${programId}`, rule.condition);
-                            if (!res.ok || res.status === "ERROR") {
-                                invalid = true;
-                                invalidConditionExpressions.push(res.description || res.message || "Condition validation failed");
-                            }
-                        } catch {
-                            invalid = true;
-                            invalidConditionExpressions.push("Condition validation error");
+                    // Check if any PRVs are used in the rule condition
+                    for (const prv of programRuleVariables.programRuleVariables) {
+                        if (rule.condition.includes(prv.name)) {
+                            usedVariables.add(prv.name);
                         }
                     }
+
+                    // Still validate the condition with the backend
+                    try {
+                        const res = await d2PostPlain(`api/programRules/condition/description?programId=${programId}`, rule.condition);
+                        if (!res.ok || res.status === "ERROR") {
+                            invalid = true;
+                            invalidConditionExpressions.push(res.description || res.message || "Condition validation failed");
+                        }
+                    } catch {
+                        invalid = true;
+                        invalidConditionExpressions.push("Condition validation error");
+                    }
                 }
-
                 for (const action of rule.programRuleActions) {
-                    const contentVars = extractVariables(action.content || "");
-                    const dataVars = extractVariables(action.data || "");
-
-                    [...contentVars, ...dataVars].forEach(v => variableNames.includes(v) ? usedVariables.add(v) : (invalid = true, missingVariables.push(v)));
+                    for (const prv of programRuleVariables.programRuleVariables) {
+                        const name = prv.name;
+                        if (
+                            action.content?.includes(name) || action.data?.includes(name)
+                        ) {
+                            usedVariables.add(name);
+                        }
+                    }
 
                     if (action.data) {
                         try {
@@ -242,6 +239,11 @@ window.validateProgramRules = async function (programIds = null) {
                         }
                     }
                 }
+
+                            
+                console.log("Program:", program.name);
+                console.log("Available variables:", variableNames);
+                console.log("Used variables from rules:", Array.from(usedVariables));
 
                 return { rule, invalid, missingVariables, invalidActionExpressions, invalidConditionExpressions };
             }));
@@ -292,7 +294,8 @@ window.validateProgramRules = async function (programIds = null) {
                 });
             });
 
-            const unusedVariables = programRuleVariables.programRuleVariables.filter(prv => !usedVariables.has(`#{${prv.name}}`));
+            const unusedVariables = programRuleVariables.programRuleVariables.filter(prv => !usedVariables.has(prv.name));
+
             unusedVariables.forEach(variable => {
                 const row = unusedVariablesTable.insertRow();
                 const selectCell = row.insertCell(0);
