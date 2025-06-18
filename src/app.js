@@ -94,7 +94,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
 
 function stripStringLiterals(expression) {
-    return expression.replace(/(["'])(?:\\.|[^\\])*?\1/g, '');
+    return expression.replace(/(["'])(?:\\.|[^\\])*?\1/g, "");
 }
 
 function extractPRVsFromD2HasValue(expression) {
