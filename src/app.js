@@ -13,7 +13,7 @@ import "choices.js/public/assets/styles/choices.min.css";
 import { loadLegacyHeaderBarIfNeeded } from "./js/check-header-bar.js";
 
 
-let validationResultsFilter, unusedVariablesFilter;
+let unusedVariablesFilter;
 
 document.addEventListener("DOMContentLoaded", async function () {
     loadLegacyHeaderBarIfNeeded();
@@ -78,16 +78,6 @@ document.addEventListener("DOMContentLoaded", async function () {
         });
     };
 
-    validationResultsFilter = new Choices("#validationResultsFilter", {
-        searchEnabled: true,
-        placeholder: true,
-        placeholderValue: "Filter by Programme",
-        searchPlaceholderValue: "Search programmes",
-        removeItemButton: true,
-        shouldSort: false,
-        duplicateItemsAllowed: false
-    });
-
     unusedVariablesFilter = new Choices("#unusedVariablesFilter", {
         searchEnabled: true,
         placeholder: true,
@@ -99,22 +89,9 @@ document.addEventListener("DOMContentLoaded", async function () {
     });
 
     // Event listeners to filter tables based on selected programs
-    validationResultsFilter.passedElement.element.addEventListener("change", filterValidationResultsTable);
     unusedVariablesFilter.passedElement.element.addEventListener("change", filterUnusedVariablesTable);
 });
 
-function filterValidationResultsTable() {
-    const selectedProgramIds = Array.from(document.getElementById("validationResultsFilter").selectedOptions).map(option => option.value);
-    const rows = document.querySelectorAll("#validationResultsTable tbody tr");
-    if (selectedProgramIds.length === 0) {
-        rows.forEach(row => row.style.display = "");
-    } else {
-        rows.forEach(row => {
-            const programId = row.cells[0].dataset.programId;
-            row.style.display = selectedProgramIds.includes(programId) ? "" : "none";
-        });
-    }
-}
 
 function stripStringLiterals(expression) {
     return expression.replace(/(["'])(?:\\.|[^\\])*?\1/g, '');
@@ -161,12 +138,10 @@ window.validateProgramRules = async function (programIds = null) {
         const programs = await d2Get("api/programs.json?fields=name,id&paging=false");
         const programMap = new Map(programs.programs.map(program => [program.id, program.name]));
 
-        const validationResultsTable = document.getElementById("validationResultsTable").querySelector("tbody");
         const unusedVariablesTable = document.getElementById("unusedVariablesTable").querySelector("tbody");
         const invalidActionExpressionsTable = document.getElementById("invalidActionExpressionsTable").querySelector("tbody");
         const invalidConditionExpressionsTable = document.getElementById("invalidConditionExpressionsTable").querySelector("tbody");
 
-        validationResultsTable.innerHTML = "";
         unusedVariablesTable.innerHTML = "";
         invalidActionExpressionsTable.innerHTML = "";
         invalidConditionExpressionsTable.innerHTML = "";
@@ -178,11 +153,9 @@ window.validateProgramRules = async function (programIds = null) {
             selectedPrograms = selectedPrograms.filter(program => programIds.includes(program.id));
         }
 
-        validationResultsFilter.clearStore();
         unusedVariablesFilter.clearStore();
 
         selectedPrograms.forEach(program => {
-            validationResultsFilter.setChoices([{ value: program.id, label: program.name }], "value", "label", false);
             unusedVariablesFilter.setChoices([{ value: program.id, label: program.name }], "value", "label", false);
         });
 
@@ -205,8 +178,6 @@ window.validateProgramRules = async function (programIds = null) {
                 const ruleProgress = ((ruleIndex + 1) / programRules.programRules.length) * programProgressInterval;
                 progressCombinedBar.style.width = `${programStartProgress + ruleProgress}%`;
 
-                let invalid = false;
-                let missingVariables = [];
                 let invalidActionExpressions = [];
                 let invalidConditionExpressions = [];
 
@@ -235,11 +206,9 @@ window.validateProgramRules = async function (programIds = null) {
                             rule.condition
                         );
                         if (!res.ok || res.status === "ERROR") {
-                            invalid = true;
                             invalidConditionExpressions.push(res.description || res.message || "Condition validation failed");
                         }
                     } catch {
-                        invalid = true;
                         invalidConditionExpressions.push("Condition validation error");
                     }
                 }
@@ -274,37 +243,21 @@ window.validateProgramRules = async function (programIds = null) {
                                 action.data
                             );
                             if (!res.ok || res.status === "ERROR") {
-                                invalid = true;
                                 invalidActionExpressions.push(res.description || res.message || "Invalid action expression");
                             }
                         } catch {
-                            invalid = true;
                             invalidActionExpressions.push("Action expression validation error");
                         }
                     }
                 }
 
-                return { rule, invalid, missingVariables, invalidActionExpressions, invalidConditionExpressions };
+                return { rule, invalidActionExpressions, invalidConditionExpressions };
             }));
 
             const results = await Promise.all(tasks);
 
-            results.forEach(({ rule, missingVariables, invalidActionExpressions, invalidConditionExpressions }) => {
+            results.forEach(({ rule, invalidActionExpressions, invalidConditionExpressions }) => {
                 const ruleLink = `../../../dhis-web-maintenance/index.html#/edit/programSection/programRule/${rule.id}`;
-
-                if (missingVariables.length) {
-                    const row = validationResultsTable.insertRow();
-                    row.insertCell(0).innerText = program.name;
-                    row.cells[0].dataset.programId = program.id;
-                    row.insertCell(1).innerText = rule.name;
-                    row.insertCell(2).innerText = rule.id;
-                    row.insertCell(3).innerText = missingVariables.join(", ");
-                    const actionCell = row.insertCell(4);
-                    const btn = document.createElement("button");
-                    btn.innerText = "Maintenance";
-                    btn.onclick = () => window.open(ruleLink, "_blank");
-                    actionCell.appendChild(btn);
-                }
 
                 invalidConditionExpressions.forEach(msg => {
                     const row = invalidConditionExpressionsTable.insertRow();

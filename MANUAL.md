@@ -54,11 +54,13 @@ This tool validates program rules and program rule variables in DHIS2, identifyi
 
 #### Viewing Results
 
-1. **Validation Results:**
-   - The "Validation Results" tab displays a table of program rules with missing variables or errors.
-   - Use the "Filter by Programme" dropdown to filter results by selected programs.
+1. **Invalid Conditions:**
+   - The "Invalid Conditions" tab lists program rules with invalid condition expressions.
 
-2. **Unused Variables:**
+2. **Invalid Actions:**
+   - The "Invalid Actions" tab lists program rule actions with invalid expressions.
+
+3. **Unused Variables:**
    - The "Unused Variables" tab displays a table of program rule variables not used in any program rules.
    - Use the "Filter by Programme" dropdown to filter variables by selected programs.
 
